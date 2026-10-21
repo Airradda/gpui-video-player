@@ -142,7 +142,9 @@ impl VideoElement {
             window
                 .paint_image(
                     dest_bounds,
+                    dest_bounds,
                     gpui::Corners::default(),
+                    0.0,
                     render_image.clone(),
                     0,
                     false,

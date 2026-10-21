@@ -1,4 +1,4 @@
-//! A video player library for [gpui](https://github.com/zed-industries/zed/tree/main/crates/gpui)
+//! A video player library for [GPUI Community Edition](https://github.com/gpui-ce/gpui-ce)
 //! applications, built on top of GStreamer.
 //!
 //! This library provides efficient video playback with hardware-accelerated rendering
@@ -13,7 +13,7 @@
 //! # Example
 //!
 //! ```no_run
-//! use gpui::{App, Application, Context, Render, Window, WindowOptions, div, prelude::*};
+//! use gpui::{App, Context, Render, Window, WindowOptions, div, prelude::*};
 //! use gpui_video_player::{Video, video};
 //! use std::path::PathBuf;
 //! use url::Url;
@@ -38,7 +38,7 @@
 //! }
 //!
 //! fn main() {
-//!     Application::new().run(|cx: &mut App| {
+//!     gpui_ce_platform::application().run(|cx: &mut App| {
 //!         let uri = Url::from_file_path(
 //!             PathBuf::from("./video.mp4")
 //!         ).expect("invalid file path");

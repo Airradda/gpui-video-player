@@ -1,6 +1,6 @@
 # `gpui-video-player`
 
-A video player library for [gpui](https://github.com/zed-industries/zed/tree/main/crates/gpui) applications, built on top of GStreamer. This library provides efficient video playback with hardware-accelerated rendering on supported platforms.
+A video player library for [GPUI Community Edition](https://github.com/gpui-ce/gpui-ce), built on top of GStreamer.
 
 ![screenshot](./assets/screenshot.png)
 
@@ -22,17 +22,20 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-gpui-video-player = "0.1.0"
+gpui = { package = "gpui-ce", git = "https://github.com/gpui-ce/gpui-ce", rev = "9a82fba4e5f1f9194a5489b7a417d164083dd67a", version = "=0.2.2", default-features = false }
+gpui_ce_platform = { git = "https://github.com/gpui-ce/gpui-ce", rev = "9a82fba4e5f1f9194a5489b7a417d164083dd67a", version = "=0.1.0", features = ["wayland", "x11"] }
+gpui-video-player = { git = "https://github.com/Airradda/gpui-video-player" }
 ```
 
-**Note:** This library depends on GPUI, which must be available in your project. The current version requires GPUI from the Zed repository.
+The library and host application must use this same GPUI CE revision. Use
+`gpui_ce_platform::application()` to construct the native CE application.
 
 ## Usage
 
 ### Basic Video Playback
 
 ```rust
-use gpui::{App, Application, Context, Render, Window, WindowOptions, div, prelude::*};
+use gpui::{App, Context, Render, Window, WindowOptions, div, prelude::*};
 use gpui_video_player::{Video, video};
 use std::path::PathBuf;
 use url::Url;
@@ -58,7 +61,7 @@ impl Render for VideoPlayer {
 
 fn main() {
     env_logger::init();
-    Application::new().run(|cx: &mut App| {
+    gpui_ce_platform::application().run(|cx: &mut App| {
         let uri = Url::from_file_path(
             PathBuf::from("./path/to/your/video.mp4"),
         ).expect("invalid file path");
