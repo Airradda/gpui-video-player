@@ -1,7 +1,4 @@
-use gpui::{
-    App, Application, Context, CursorStyle, Render, Window, WindowOptions, div, prelude::*,
-};
-use gpui_component::button::Button;
+use gpui::{App, Context, Render, Window, WindowOptions, div, prelude::*};
 use gpui_video_player::{Video, video};
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
@@ -22,10 +19,10 @@ impl WithControlsExample {
 
     fn click_allowed(&mut self) -> bool {
         let now = Instant::now();
-        if let Some(prev) = self.last_click {
-            if now.saturating_duration_since(prev) < Duration::from_millis(250) {
-                return false;
-            }
+        if let Some(prev) = self.last_click
+            && now.saturating_duration_since(prev) < Duration::from_millis(250)
+        {
+            return false;
         }
         self.last_click = Some(now);
         true
@@ -37,30 +34,36 @@ impl Render for WithControlsExample {
         let is_paused = self.video.paused();
         let play_label = if is_paused { "▶️" } else { "⏸️" };
 
-        let back_5s = Button::new("back-5s")
-            .label("⏪")
-            .cursor(CursorStyle::PointingHand)
+        let back_5s = div()
+            .id("back-5s")
+            .px_3()
+            .py_2()
+            .rounded_md()
+            .bg(gpui::rgb(0x3f3f46))
+            .hover_style(|style| style.bg(gpui::rgb(0x52525b)))
+            .cursor_pointer()
+            .child("Back 5s")
             .on_click(cx.listener(|this: &mut Self, _event, _window, cx| {
                 if !this.click_allowed() {
                     return;
                 }
                 let pos = this.video.position();
                 let new_pos = pos.saturating_sub(Duration::from_secs(5));
-
-                cx.spawn(async move |handle, cx| {
-                    handle
-                        .update(cx, |this, cx| {
-                            let _ = this.video.seek(new_pos, false);
-                            cx.notify();
-                        })
-                        .ok();
-                })
-                .detach();
+                if let Err(error) = this.video.seek(new_pos, false) {
+                    log::warn!("failed to seek backward: {error}");
+                }
+                cx.notify();
             }));
 
-        let play_pause = Button::new("play-pause")
-            .label(play_label)
-            .cursor(CursorStyle::PointingHand)
+        let play_pause = div()
+            .id("play-pause")
+            .px_3()
+            .py_2()
+            .rounded_md()
+            .bg(gpui::rgb(0x3f3f46))
+            .hover_style(|style| style.bg(gpui::rgb(0x52525b)))
+            .cursor_pointer()
+            .child(play_label)
             .on_click(cx.listener(|this: &mut Self, _event, _window, cx| {
                 if !this.click_allowed() {
                     return;
@@ -70,9 +73,15 @@ impl Render for WithControlsExample {
                 cx.notify();
             }));
 
-        let forward_5s = Button::new("forward-5s")
-            .label("⏩")
-            .cursor(CursorStyle::PointingHand)
+        let forward_5s = div()
+            .id("forward-5s")
+            .px_3()
+            .py_2()
+            .rounded_md()
+            .bg(gpui::rgb(0x3f3f46))
+            .hover_style(|style| style.bg(gpui::rgb(0x52525b)))
+            .cursor_pointer()
+            .child("Forward 5s")
             .on_click(cx.listener(|this: &mut Self, _event, _window, cx| {
                 if !this.click_allowed() {
                     return;
@@ -82,15 +91,10 @@ impl Render for WithControlsExample {
                 let target = pos.saturating_add(Duration::from_secs(5));
                 let new_pos = if target > dur { dur } else { target };
 
-                cx.spawn(async move |handle, cx| {
-                    handle
-                        .update(cx, |this, cx| {
-                            let _ = this.video.seek(new_pos, false);
-                            cx.notify();
-                        })
-                        .ok();
-                })
-                .detach();
+                if let Err(error) = this.video.seek(new_pos, false) {
+                    log::warn!("failed to seek forward: {error}");
+                }
+                cx.notify();
             }));
 
         div()
@@ -129,7 +133,7 @@ impl Render for WithControlsExample {
 
 fn main() {
     env_logger::init();
-    Application::new().run(|cx: &mut App| {
+    gpui_ce_platform::application().run(|cx: &mut App| {
         let uri = Url::from_file_path(
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./assets/test3.mp4"),
         )
@@ -141,8 +145,6 @@ fn main() {
                 ..Default::default()
             },
             |_, cx| {
-                gpui_component::init(cx);
-
                 let video = Video::new(&uri).expect("failed to create video");
                 cx.new(|_| WithControlsExample::new(video))
             },
